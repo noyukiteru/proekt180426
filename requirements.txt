@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+aiosqlite
+pydantic
+python-dotenv
+aiogram
+httpx
+jinja2
+python-multipart
+passlib
+python-jose

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Аналитика{% endblock %}
+{% block content %}
+<h2 class="mb-4">📊 Статистика записей</h2>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5 class="text-center">Распределение по статусам</h5>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5 class="text-center">Загруженность мастеров</h5>
+            <canvas id="masterChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadAnalytics() {
+        try {
+            const res = await fetch('/api/appointments/');
+            const data = await res.json();
+
+            // График по статусам
+            const statusCounts = {};
+            data.forEach(a => statusCounts[a.status] = (statusCounts[a.status] || 0) + 1);
+
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#6c757d']
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // График по мастерам
+            const masterCounts = {};
+            data.forEach(a => {
+                const masterName = a.master?.name || 'Мастер #' + a.master_id;
+                masterCounts[masterName] = (masterCounts[masterName] || 0) + 1;
+            });
+
+            new Chart(document.getElementById('masterChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(masterCounts),
+                    datasets: [{
+                        label: 'Количество записей',
+                        data: Object.values(masterCounts),
+                        backgroundColor: '#0d6efd'
+                    }]
+                },
+                options: { responsive: true }
+            });
+        } catch (error) {
+            console.error('Ошибка загрузки аналитики:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAnalytics);
+</script>
+{% endblock %}
